@@ -21,12 +21,12 @@ This project uses a three-stage collection pipeline to maximize the free API quo
 | 2 | ip-api.com batch | Free, no key | Geolocates all 10,000 IPs at once |
 | 3 | AbuseIPDB `/check` | 1 req per EU IP | Gets ISP, TOR, attack categories for European IPs only |
 
-This project requires a free API key from AbuseIPDB. No credit card is required. To obtain a key, register at abuseipdb.com/register using your email address and a password, then verify your email. After logging in, navigate to Account > API in the top menu and click Create Key. Give the key any name, confirm the creation, and copy the generated value. Paste the API key into the script before running the project.
+To run the project, you will need a free API key from AbuseIPDB. No credit card is required. To obtain a key, register at abuseipdb.com/register using your email address and a password, then verify your email. After logging in, navigate to Account > API in the top menu and click Create Key. Give the key any name, confirm the creation, and copy the generated value. Paste the API key into the script before running the project.
 
 ```python
 ABUSEIPDB_API_KEY = os.environ.get("ABUSEIPDB_API_KEY", "PASTE_YOUR_KEY_HERE")
 ```
-The free tier of AbuseIPDB allows 1,000 API requests per day, resetting at midnight UTC (1:00 AM Prague / CET). The free tier of ip-api.com allows 15 batch requests per minute, so the geolocation stage typically takes about 7–8 minutes per run. When the script starts, it checks the remaining API quota and exits cleanly with a clear message if the daily limit has already been reached.
+The free tier of AbuseIPDB allows 1,000 API requests per day, resetting at midnight UTC (1:00 AM Prague / CET). The free tier of ip-api.com allows 15 batch requests per minute, so the geolocation stage typically takes about 7-8 minutes per run. When the script starts, it checks the remaining API quota and exits cleanly with a clear message if the daily limit has already been reached.
 
 The remaining quota is read directly from the API response headers (``X-RateLimit-Remaining``) during the initial request. This ensures the script always knows exactly how many IP addresses it can process before continuing.
 
@@ -52,7 +52,7 @@ View my notebook with detailed steps here: [api_data_collector.ipynb](api_data_c
 
 Instead of randomly checking ~1,000 IPs per day, the pipeline downloads the entire blacklist, filters for IPs located in Europe, and uses the daily quota to enrich European IPs only. This is the key efficiency gain: without this step, roughly 85% of the daily quota would be wasted on non-European IPs. Each day, the pipeline identifies approximately 1,500-2,000 European IPs, enriching around 995 IPs using the free quota. Each enrichment call counts as one request against the daily quota. If the quota runs out mid-run, the pipeline stops cleanly and saves all collected data up to that point.
 
-**Output CSV columns:**
+**Output CSV columns**
 
 Results are saved to abuseipdb_europe.csv. Each run appends new records to the existing file and automatically deduplicates by IP address and date, ensuring that the same IP is never counted twice on the same day. Running the collector daily builds a growing historical dataset over time, with the following fields:
 

@@ -127,8 +127,8 @@ def check_quota(api_key):
 
         if quota_remaining < 10:
             print()
-            print("⚠️  Not enough quota left today.")
-            print("   Come back after 1:00 AM Prague time.")
+            print("⚠️ Not enough quota left today.")
+            print(" Come back after 1:00 AM Prague time.")
             return 0, 0
 
         return quota_remaining, max_eu_checks
@@ -161,14 +161,14 @@ def download_blacklist(api_key):
             timeout=60,
         )
         if resp.status_code == 429:
-            print("   ❌ Rate limit hit on blacklist download.")
+            print("❌ Rate limit hit on blacklist download.")
             return []
         resp.raise_for_status()
         blacklist = resp.json().get("data", [])
         print(f"   ✅ Got {len(blacklist):,} IPs from blacklist")
         return blacklist
     except Exception as e:
-        print(f"   ❌ Failed to download blacklist: {e}")
+        print(f"❌ Failed to download blacklist: {e}")
         return []
 
 
@@ -202,7 +202,7 @@ def geolocate_and_filter(blacklist, max_eu_checks):
                 for item in geo_resp.json():
                     ip_to_country[item["query"]] = item.get("countryCode", "").upper()
             elif geo_resp.status_code == 429:
-                print("   ⚠️  ip-api.com rate limit — waiting 60 seconds...")
+                print("⚠️ ip-api.com rate limit — waiting 60 seconds...")
                 time.sleep(61)
                 geo_resp = requests.post(
                     "http://ip-api.com/batch",
@@ -228,8 +228,8 @@ def geolocate_and_filter(blacklist, max_eu_checks):
 
     if len(european_candidates) > max_eu_checks:
         print()
-        print(f"   ⚠️  {len(european_candidates):,} EU IPs found but only {max_eu_checks:,} quota remaining.")
-        print(f"      Will enrich first {max_eu_checks:,} — run again tomorrow for the rest.")
+        print(f"⚠️ {len(european_candidates):,} EU IPs found but only {max_eu_checks:,} quota remaining.")
+        print(f"Will enrich first {max_eu_checks:,} — run again tomorrow for the rest.")
 
     return european_candidates, ip_to_country
 
@@ -273,8 +273,8 @@ def enrich_european_ips(european_candidates, ip_to_country, api_key, quota_remai
             requests_used += 1
 
             if resp.status_code == 429:
-                print(f"\n   ⚠️  Rate limit reached after {requests_used} requests.")
-                print(f"      Saving {len(european_ips)} enriched IPs collected so far.")
+                print(f"\n ⚠️ Rate limit reached after {requests_used} requests.")
+                print(f" Saving {len(european_ips)} enriched IPs collected so far.")
                 break
 
             if resp.status_code != 200:
@@ -330,7 +330,7 @@ def enrich_european_ips(european_candidates, ip_to_country, api_key, quota_remai
 def save_and_summarize(european_ips):
     """Appends new results to CSV, deduplicates, and prints summary."""
     if not european_ips:
-        print("\n⚠️  No data to save.")
+        print("\n⚠️ No data to save.")
         return
 
     COLUMNS = [
@@ -414,7 +414,7 @@ def save_and_summarize(european_ips):
 
     print()
     print("=" * 50)
-    print("  ✅ Done! Run again after 1:00 AM Prague time.")
+    print("✅ Done! Run again after 1:00 AM Prague time.")
     print("=" * 50)
 
 
@@ -428,7 +428,7 @@ def main():
     print(f"  Run time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print("=" * 50)
 
-    if ABUSEIPDB_API_KEY == "YOUR_API_KEY_HERE":
+    if ABUSEIPDB_API_KEY == "PASTE_YOUR_API_KEY_HERE":
         print("\n❌ API key not set.")
         print("   Open this file and paste your key into ABUSEIPDB_API_KEY on line 47")
         print("   Or set environment variable: set ABUSEIPDB_API_KEY=your_key")
@@ -445,7 +445,7 @@ def main():
 
     european_candidates, ip_to_country = geolocate_and_filter(blacklist, max_eu_checks)
     if not european_candidates:
-        print("\n⚠️  No European IPs found in blacklist sample.")
+        print("\n⚠️ No European IPs found in blacklist sample.")
         return
 
     european_ips = enrich_european_ips(
