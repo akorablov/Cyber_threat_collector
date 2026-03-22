@@ -24,7 +24,7 @@
 
   Free tier limits:
     - 1,000 API requests/day
-    - Resets at midnight UTC = 1:00 AM Prague (CET)
+    - Resets at midnight UTC
     - Max 365 days lookback
 
   API key:
@@ -108,7 +108,7 @@ def check_quota(api_key):
             return 0, 0
         if test.status_code == 429:
             print("❌ Daily limit already reached.")
-            print("   Resets at midnight UTC = 1:00 AM Prague (CET).")
+            print("   Resets at midnight UTC.")
             return 0, 0
 
         quota_remaining = int(test.headers.get("X-RateLimit-Remaining", 0))
@@ -128,7 +128,7 @@ def check_quota(api_key):
         if quota_remaining < 10:
             print()
             print("⚠️ Not enough quota left today.")
-            print(" Come back after 1:00 AM Prague time.")
+            print(" Come back after 1:00 AM.")
             return 0, 0
 
         return quota_remaining, max_eu_checks
@@ -184,7 +184,7 @@ def geolocate_and_filter(blacklist, max_eu_checks):
     """
     print(f"\n[2/3] Geolocating {len(blacklist):,} IPs via ip-api.com (free, no quota used)...")
     est_min = (len(blacklist) / 100) * 4.2 / 60
-    print(f"      Estimated time: {est_min:.0f}–{est_min * 1.2:.0f} minutes")
+    print(f"      Estimated time: {est_min:.0f}-{est_min * 1.2:.0f} minutes")
 
     ip_to_country = {}
     batch_size    = 100
@@ -202,7 +202,7 @@ def geolocate_and_filter(blacklist, max_eu_checks):
                 for item in geo_resp.json():
                     ip_to_country[item["query"]] = item.get("countryCode", "").upper()
             elif geo_resp.status_code == 429:
-                print("⚠️ ip-api.com rate limit — waiting 60 seconds...")
+                print("⚠️ ip-api.com rate limit - waiting 60 seconds...")
                 time.sleep(61)
                 geo_resp = requests.post(
                     "http://ip-api.com/batch",
@@ -229,13 +229,13 @@ def geolocate_and_filter(blacklist, max_eu_checks):
     if len(european_candidates) > max_eu_checks:
         print()
         print(f"⚠️ {len(european_candidates):,} EU IPs found but only {max_eu_checks:,} quota remaining.")
-        print(f"Will enrich first {max_eu_checks:,} — run again tomorrow for the rest.")
+        print(f"Will enrich first {max_eu_checks:,} - run again tomorrow for the rest.")
 
     return european_candidates, ip_to_country
 
 
 # ═════════════════════════════════════════════════════════════
-#  STAGE 3 - Enrich European IPs via AbuseIPDB /check
+#  STAGE 3 - Enrich European IPs via AbuseIPDB/check
 # ═════════════════════════════════════════════════════════════
 
 def enrich_european_ips(european_candidates, ip_to_country, api_key, quota_remaining, max_eu_checks):
@@ -246,9 +246,9 @@ def enrich_european_ips(european_candidates, ip_to_country, api_key, quota_remai
     headers   = {"Key": api_key, "Accept": "application/json"}
     to_enrich = european_candidates[:max_eu_checks]
 
-    est_min = len(to_enrich) * 0.15 / 60
+    est_min = len(to_enrich) * 1.5 / 60
     print(f"\n[3/3] Enriching {len(to_enrich):,} European IPs via AbuseIPDB /check...")
-    print(f"      Estimated time: {est_min:.0f}–{est_min * 1.3:.0f} minutes")
+    print(f"      Estimated time: {est_min:.0f}-{est_min * 1.3:.0f} minutes")
 
     european_ips  = []
     requests_used = 0
@@ -414,7 +414,7 @@ def save_and_summarize(european_ips):
 
     print()
     print("=" * 50)
-    print("✅ Done! Run again after 1:00 AM Prague time.")
+    print("✅ Done! Run again after 1:00 AM.")
     print("=" * 50)
 
 
@@ -424,7 +424,7 @@ def save_and_summarize(european_ips):
 
 def main():
     print("=" * 50)
-    print("  AbuseIPDB European Threat Collector v3.0")
+    print("  European Threat Collector")
     print(f"  Run time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print("=" * 50)
 
